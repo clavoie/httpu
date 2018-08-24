@@ -1,10 +1,11 @@
-package handlerutil
+package httpu
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/clavoie/logu"
 )
 
 // DecodeJsonOr400 attempts to json decode the request body into the destination object. See
@@ -15,12 +16,7 @@ import (
 // If an error is encountered decoding the object a HTTP 400 is written to the response stream,
 // and true is returned. If the decoding succeeds then false is returned
 func DecodeJsonOr400(w http.ResponseWriter, r *http.Request, dst interface{}, format string, args ...interface{}) bool {
-	defer r.Body.Close()
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(dst)
-
-	return Write400IfErr(err, w, format, args...)
+	return NewImpl(w, r, logu.NewGoLogger()).DecodeJsonOr400(dst, format, args...)
 }
 
 // EncodeJsonOr500 sets the Content-Type of the response to application/json, and encodes the
@@ -29,12 +25,7 @@ func DecodeJsonOr400(w http.ResponseWriter, r *http.Request, dst interface{}, fo
 //
 // Returns true if there was an error encountered, and false otherwise.
 func EncodeJsonOr500(w http.ResponseWriter, src interface{}, format string, args ...interface{}) bool {
-	w.Header().Set("Content-Type", "application/json")
-
-	encoder := json.NewEncoder(w)
-	err := encoder.Encode(src)
-
-	return Write500IfErr(err, w, format, args...)
+	return NewImpl(w, nil, logu.NewGoLogger()).EncodeJsonOr500(src, format, args...)
 }
 
 // SetAsDownloadFileWithName sets the Content-Disposition of the response writer to that of

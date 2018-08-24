@@ -2,6 +2,8 @@ package httpu_test
 
 import (
 	"testing"
+
+	"github.com/clavoie/httpu"
 )
 
 func TestNewDiDefs(t *testing.T) {

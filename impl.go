@@ -63,7 +63,7 @@ type impl struct {
 // NewImpl returns a new instance of Impl
 func NewImpl(w http.ResponseWriter, r *http.Request, l logu.Logger) Impl {
 	return &impl{
-		l: logger,
+		l: l,
 		r: r,
 		w: w,
 	}
@@ -88,7 +88,7 @@ func (i *impl) EncodeJsonOr500(src interface{}, format string, args ...interface
 }
 
 func (i *impl) TryDecodeJsonFile(filename string, dst interface{}) bool {
-	err := r.ParseMultipartForm(10000000)
+	err := i.r.ParseMultipartForm(10000000)
 
 	if i.Write500IfErr(err, "Could not parse multipart form for file %v", filename) {
 		return true
@@ -98,7 +98,7 @@ func (i *impl) TryDecodeJsonFile(filename string, dst interface{}) bool {
 		err := i.r.MultipartForm.RemoveAll()
 
 		if err != nil {
-			i.l.Errorf(err)
+			i.l.Errorf("%v", err)
 		}
 	}()
 	file, _, err := i.r.FormFile(filename)
