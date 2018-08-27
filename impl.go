@@ -2,6 +2,7 @@ package httpu
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/clavoie/logu"
@@ -115,7 +116,7 @@ func (i *impl) TryDecodeJsonFile(filename string, dst interface{}) bool {
 }
 
 func (i *impl) SetAsDownloadFileWithName(filenameFmt string, args ...interface{}) {
-	SetAsDownloadFileWithName(i.w, filenameFmt, args...)
+	i.w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%v\"", fmt.Sprintf(filenameFmt, args...)))
 }
 
 func (i *impl) Write400IfErr(err error, format string, args ...interface{}) bool {
@@ -133,5 +134,12 @@ func (i *impl) WriteIfErr(err error, statusCode int, format string, args ...inte
 		logFn = i.l.Errorf
 	}
 
-	return WriteIfErrL(err, statusCode, i.w, logFn, format, args...)
+	if err == nil {
+		return false
+	}
+
+	i.w.WriteHeader(statusCode)
+	args = append(args, err)
+	logFn(format+": %v", args...)
+	return true
 }

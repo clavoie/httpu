@@ -1,8 +1,6 @@
 package httpu
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/clavoie/logu"
@@ -31,17 +29,17 @@ func EncodeJsonOr500(w http.ResponseWriter, src interface{}, format string, args
 // SetAsDownloadFileWithName sets the Content-Disposition of the response writer to that of
 // an attachment with the specified file name.
 func SetAsDownloadFileWithName(w http.ResponseWriter, filenameFmt string, args ...interface{}) {
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%v\"", fmt.Sprintf(filenameFmt, args...)))
+	NewImpl(w, nil, logu.NewGoLogger()).SetAsDownloadFileWithName(filenameFmt, args...)
 }
 
 // Write400IfErr works like WriteIfErr(err, http.StatusBadRequest, w, format, args...)
 func Write400IfErr(err error, w http.ResponseWriter, format string, args ...interface{}) bool {
-	return WriteIfErr(err, http.StatusBadRequest, w, format, args...)
+	return NewImpl(w, nil, logu.NewGoLogger()).WriteIfErr(err, http.StatusBadRequest, format, args...)
 }
 
 // Write500IfErr works like WriteIfErr(err, http.StatusInternalServerError, w, format, args...)
 func Write500IfErr(err error, w http.ResponseWriter, format string, args ...interface{}) bool {
-	return WriteIfErr(err, http.StatusInternalServerError, w, format, args...)
+	return NewImpl(w, nil, logu.NewGoLogger()).WriteIfErr(err, http.StatusInternalServerError, format, args...)
 }
 
 // WriteIfErr writes an http status code and message if there is an error. If the error
@@ -50,17 +48,5 @@ func Write500IfErr(err error, w http.ResponseWriter, format string, args ...inte
 //
 // true is returned if an error was detected and false is returned if there is no error
 func WriteIfErr(err error, statusCode int, w http.ResponseWriter, format string, args ...interface{}) bool {
-	return WriteIfErrL(err, statusCode, w, log.Printf, format, args...)
-}
-
-// WriteIferrL works like WriteIfErr, writing its output using a specific logging function
-func WriteIfErrL(err error, statusCode int, w http.ResponseWriter, logFn func(format string, args ...interface{}), format string, args ...interface{}) bool {
-	if err == nil {
-		return false
-	}
-
-	w.WriteHeader(statusCode)
-	args = append(args, err)
-	logFn(format+": %v", args...)
-	return true
+	return NewImpl(w, nil, logu.NewGoLogger()).WriteIfErr(err, statusCode, format, args...)
 }
