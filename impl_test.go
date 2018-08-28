@@ -29,6 +29,7 @@ func TestImpl(t *testing.T) {
 
 	newImpl := func(data string, t *testing.T) (*http.Request, *httptest.ResponseRecorder, *mock_logu.MockLogger, httpu.Impl, func()) {
 		r := httptest.NewRequest("POST", "http://test.com", bytes.NewBufferString(data))
+		r.Header.Set("Content-Type", `multipart/form-data; boundary="xxx"`)
 		w := httptest.NewRecorder()
 		ctrl := gomock.NewController(t)
 		l := mock_logu.NewMockLogger(ctrl)
@@ -212,5 +213,62 @@ func TestImpl(t *testing.T) {
 		}
 	})
 
-	// TODO try decode json file
+	//
+	// TryDeocdeJsonFile
+	//
+
+	filename := "filename"
+	postData := fmt.Sprintf(`--xxx
+Content-Disposition: form-data; name="%v"; filename="%v"
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: binary
+
+%v
+--xxx--
+`, filename, filename, successfulJson)
+
+	t.Run("TryDecodeJsonFileParseFail", func(t *testing.T) {
+		_, w, l, i, finish := newImpl(``, t)
+		defer finish()
+
+		l.EXPECT().Errorf(NonEmptyStr(), filename)
+		j := new(Json)
+
+		if i.TryDecodeJsonFile(filename, j) == false {
+			t.Fatal("Was expecting parse failure")
+		}
+
+		if w.Code != 500 {
+			t.Fatal("Was expecting 500 status code")
+		}
+	})
+	t.Run("TryDecodeJsonFileFileNotFound", func(t *testing.T) {
+		_, w, l, i, finish := newImpl(postData, t)
+		defer finish()
+
+		badFilename := filename + "x"
+		l.EXPECT().Warningf(NonEmptyStr(), badFilename)
+		j := new(Json)
+
+		if i.TryDecodeJsonFile(badFilename, j) == false {
+			t.Fatal("Was expecting parse failure")
+		}
+
+		if w.Code != 400 {
+			t.Fatal("Was expecting 400 status code")
+		}
+	})
+	t.Run("TryDecodeJsonFileSuccess", func(t *testing.T) {
+		_, _, _, i, finish := newImpl(postData, t)
+		defer finish()
+
+		j := new(Json)
+		if i.TryDecodeJsonFile(filename, j) {
+			t.Fatal("Was expecting success")
+		}
+
+		if j.Field != fieldValue {
+			t.Fatal(j.Field, fieldValue)
+		}
+	})
 }
