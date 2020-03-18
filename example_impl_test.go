@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/clavoie/di"
+	"github.com/clavoie/di/v2"
 	"github.com/clavoie/erru"
 	"github.com/clavoie/httpu"
 	"github.com/clavoie/logu"
