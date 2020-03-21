@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/clavoie/logu"
+	"github.com/clavoie/logu/v2"
 )
 
 // Impl is a wrapper around all top level package functions

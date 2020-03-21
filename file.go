@@ -3,7 +3,7 @@ package httpu
 import (
 	"net/http"
 
-	"github.com/clavoie/logu"
+	"github.com/clavoie/logu/v2"
 )
 
 // TryDecodeJsonFile attempts to parse a file upload from the request, and json deserialize

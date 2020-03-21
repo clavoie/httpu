@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/clavoie/httpu"
-	"github.com/clavoie/logu/mock_logu"
+	mock_v2 "github.com/clavoie/logu/v2/mock_logu"
 	"github.com/golang/mock/gomock"
 )
 
@@ -27,12 +27,12 @@ func TestImpl(t *testing.T) {
 	expectedFormat := fmt.Sprintf(format, formatArgs...)
 	err := errors.New("my error")
 
-	newImpl := func(data string, t *testing.T) (*http.Request, *httptest.ResponseRecorder, *mock_logu.MockLogger, httpu.Impl, func()) {
+	newImpl := func(data string, t *testing.T) (*http.Request, *httptest.ResponseRecorder, *mock_v2.MockLogger, httpu.Impl, func()) {
 		r := httptest.NewRequest("POST", "http://test.com", bytes.NewBufferString(data))
 		r.Header.Set("Content-Type", `multipart/form-data; boundary="xxx"`)
 		w := httptest.NewRecorder()
 		ctrl := gomock.NewController(t)
-		l := mock_logu.NewMockLogger(ctrl)
+		l := mock_v2.NewMockLogger(ctrl)
 		i := httpu.NewImpl(w, r, l)
 
 		return r, w, l, i, ctrl.Finish

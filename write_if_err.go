@@ -3,7 +3,7 @@ package httpu
 import (
 	"net/http"
 
-	"github.com/clavoie/logu"
+	"github.com/clavoie/logu/v2"
 )
 
 // DecodeJsonOr400 attempts to json decode the request body into the destination object. See
